@@ -1,67 +1,57 @@
-import string
-import sys
-import hashlib
+from hashlib import sha256
+import json
 import re
-alpha = set(string.ascii_lowercase + string.ascii_uppercase)
-digits = set(string.digits)
-special_chars =  ['!', '@', '#', '$', '%', "^", "&", '*' ]
+import os
 
-def save_password(password):
-    if password == "password":
-        return password
-    else:
-        print("Le mot de passe n'est pas valide. Merci de retenter")
-       
-# def check_password(password,
-#                         non_alphabetic_characters=special_chars,
-#                         digits_characters=digits,
-#                         letters_characters=alpha):
-#     if not any(character in password
-#                for character in non_alphabetic_characters):
-#         err_msg = ('\nLe mot de passe doit au moins contenir un carcatère spécial')
-#         print(err_msg)
-#         print('Mot de passe invalide')
-#         ask_password()
+path_to_json = "./passwords_list.json"
 
 
-#     if not any(character in password
-#                for character in digits_characters):
-#         err_msg = ('\n Le mot de passe doit au moins contenir un chiffre')
-#         print(err_msg)
-#         print('Mot de passe invalide')
-#         ask_password()
+def save_json_password(password):
+    if not os.path.exists(path_to_json):
+        with open(path_to_json, "w") as handler:
+            json.dump({"passwords": []}, handler)
 
+    with open(path_to_json, "r") as handler:
+        info = json.load(handler)
 
-#     if not any(character in password
-#                for character in letters_characters):
-#         err_msg = ('\n Le mot de passe doit au moins contenir une lettre majuscule et minucule')
-#         print(err_msg)
-#         print('Mot de passe invalide')
-#         ask_password()
+    passwords = info["passwords"]
+    passwords.append(password)
+
+    with open(path_to_json, "w") as handler:
+        json.dump(info, handler, indent=4)
+
+    print("Password '{}' saved to JSON file.".format(password))
 
 
 def check_password(password):
     if len(password) < 8:
         print("Votre mot de passe doit au moins contenir 8 caractères.")
-        ask_password()
+        main()
     elif re.search('[0-9]',password) is None:
         print("Votre mot de passe doit au moins contenir un nombre.")
-        ask_password()
+        main()
     elif re.search('[A-Z]',password) is None:
         print("Votre mot de passe doit au moins contenir une lettre majuscule.")
-        ask_password()
+        main()
     elif re.search('[!@#$%^&*]',password) is None:
         print("Votre mot de passe doit au moins contenir un caractère spécial (!, @, #, $, %, ^, &, *).")
-        ask_password()
+        main()
     else:
         print("Votre mot de passe est valide !")
-        
-    
-def ask_password():
+    return password
+
+
+def hash_password(password):
+    return sha256(password.encode('utf-8')).hexdigest() 
+
+def main():
     password = input('Veuillez entrer votre mot de passe:')
-    return check_password(password)
+    check_password(password)
+    encode_p = hash_password(password)
+    # return print(encode_p)
+    return save_json_password(encode_p)
 
 
 if __name__ == "__main__":
-    ask_password()
+    main()
 
