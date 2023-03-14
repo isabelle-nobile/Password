@@ -3,11 +3,23 @@ import json
 import re
 import os
 
+
 path_to_json = "./passwords_list.json"
 
 
+def load_password_history_from_json():
+    """Charge le fichier json"""
+    if not os.path.isfile(path_to_json):
+        return []
+
+    with open(path_to_json, "r") as handler:
+        info = json.load(handler)
+
+    return info["passwords"]
+
+
 def save_json_password(password):
-    """Sauvegarde le mot de passe dans un fichier json"""
+    """Sauvegarde le mot de passe haché dans un fichier json"""
     if not os.path.exists(path_to_json):
         with open(path_to_json, "w") as handler:
             json.dump({"passwords": []}, handler)
@@ -15,13 +27,14 @@ def save_json_password(password):
     with open(path_to_json, "r") as handler:
         info = json.load(handler)
 
+    hashed_password = hash_password(password)
     passwords = info["passwords"]
-    passwords.append(password)
+    passwords.append(hashed_password)
 
     with open(path_to_json, "w") as handler:
         json.dump(info, handler, indent=4)
 
-    print("Password '{}' saved to JSON file.".format(password))
+    print("Le mot de passe '{}' sauvegardé dans un fichier JSON.".format(password))
 
 
 def check_password(password):
@@ -29,13 +42,13 @@ def check_password(password):
     if len(password) < 8:
         print("Votre mot de passe doit au moins contenir 8 caractères.")
         main()
-    elif re.search('[0-9]',password) is None:
+    elif re.search('[0-9]', password) is None:
         print("Votre mot de passe doit au moins contenir un nombre.")
         main()
-    elif re.search('[A-Z]',password) is None:
+    elif re.search('[A-Z]', password) is None:
         print("Votre mot de passe doit au moins contenir une lettre majuscule.")
         main()
-    elif re.search('[!@#$%^&*]',password) is None:
+    elif re.search('[!@#$%^&*]', password) is None:
         print("Votre mot de passe doit au moins contenir un caractère spécial (!, @, #, $, %, ^, &, *).")
         main()
     else:
@@ -47,26 +60,28 @@ def hash_password(password):
     """Hash avec sha256 le mot de passe et l'encode """
     return sha256(password.encode('utf-8')).hexdigest()
 
-password_history = [
-  {
-    "salt": "89!$@sg",
-    "hash": "asdfjhlaksjdhflkjahsdlkfjh",
-  },
-]
 
-def has_used_password(password_history, new_password):
-  hashes = set(h["hash"] for h in password_history)
+def is_password_used(password_history, password):
+    """ Vérifie si le mot de passe a déjà été utilisé dans l'historique """
+    hashed_password = hash_password(password)
+    for hashed_password_history in password_history:
+        if hashed_password == hashed_password_history:
+            return True
+    return False
 
-  count = 0
-  for entry in password_history:
-    hash_with_old_salt = hash_password(new_password, entry["salt"])
-    if hash_with_old_salt in hashes :
-      count += 1
-  return count
 
 def main():
-    password = input('Veuillez entrer votre mot de passe:')
-    check_password(password)
-    encode_p = hash_password(password)
-    return save_json_password(encode_p)
+    password_history = load_password_history_from_json()
+    while True:
+        password = input('Veuillez entrer votre mot de passe:')
+        checked_password = check_password(password)
+        encode_p = hash_password(checked_password)
+        if is_password_used(password_history, encode_p) > 0:
+            print("\nVous avez déjà utilisé ce mot de passe, veuillez en choisir un autre.")
+        else:
+            save_json_password(encode_p)
+            print("\nLe mot de passe n'a jamais été utilisé.")
+            break
 
+
+main()
