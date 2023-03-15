@@ -35,7 +35,7 @@ def save_json_password(password):
     with open(path_to_json, "w") as handler:
         json.dump(info, handler, indent=4)
 
-    print("Le mot de passe '{}' sauvegardé dans un fichier JSON.".format(password))
+    print("Le mot de passe '{}' est sauvegardé dans un fichier JSON.".format(password))
 
 
 def generate_password():
@@ -55,7 +55,6 @@ def generate_password():
             break
 
     return pwd
-
 
 def hash_password(password):
     """Hash avec sha256 le mot de passe et l'encode """
@@ -84,5 +83,3 @@ def main():
             print("\nLe mot de passe n'a jamais été utilisé.")
             break
 
-
-main()
