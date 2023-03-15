@@ -35,7 +35,7 @@ Récupération du projet
         $ git clone https://github.com/isabelle-nobile/Password
 Activer l'environnement virtuel
         
-        $ cd P4
+        $ cd Password
         $ python -m venv env 
         $ ~env\scripts\activate
 Installer les modules
@@ -54,7 +54,7 @@ Récupération du projet
         $ git clone https://github.com/isabelle-nobile/Password
 Activer l'environnement virtuel
 
-        $ cd P4
+        $ cd Password
         $ python3 -m venv env 
         $ source env/bin/activate
 Installer les modules
